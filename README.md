@@ -1,5 +1,24 @@
 # Foundation Models AppBench
 
+> [!IMPORTANT]
+> AppBench now lives in
+> [Foundation Models Framework Lab](https://github.com/rudrankriyam/Foundation-Models-Framework-Lab/tree/main/Tools/AppBench).
+> This standalone repository is preserved as a read-only historical archive.
+
+The complete AppBench Git history was imported into Foundation Lab. Use the Lab
+repository for current source, issues, pull requests, releases, and documentation:
+
+```bash
+git clone https://github.com/rudrankriyam/Foundation-Models-Framework-Lab.git
+cd Foundation-Models-Framework-Lab
+./Tools/AppBench/appbench list
+```
+
+The canonical Mac runner is the Lab's `appbench` CLI. Physical iPhone and iPad
+measurements use the signed
+[`AppBenchDeviceRunner`](https://github.com/rudrankriyam/Foundation-Models-Framework-Lab/tree/main/Tools/AppBench/AppBenchDeviceRunner)
+harness.
+
 Foundation Models AppBench measures real application workloads across Apple devices,
 OS releases, the on-device system model, and Private Cloud Compute.
 
