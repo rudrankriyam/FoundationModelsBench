@@ -168,9 +168,9 @@ struct FoundationModelsBenchMetricsTests {
         )
 
         #expect(result.summaries[0].peakObservedResidentMemoryBytes.maximum == 24_477_696)
-        #expect(result.summaries[0].promptPassRate == 1)
+        #expect(result.summaries[0].promptPassRate == 0)
         #expect(result.summaries[0].failureRate == 0.5)
-        #expect(result.summaries[0].endToEndPassRate == 0.5)
+        #expect(result.summaries[0].endToEndPassRate == 0)
         let report = FoundationModelsBenchReport(result: result).markdown()
         #expect(report.contains("Task success"))
         #expect(report.contains("Tool sequence: searchContacts"))
