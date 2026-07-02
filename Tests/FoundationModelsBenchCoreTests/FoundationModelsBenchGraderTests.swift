@@ -408,6 +408,20 @@ struct FoundationModelsBenchGraderTests {
     }
 
     @Test
+    func emptyCheckSafetyProtectionSamplesDoNotEarnConstraintCredit() {
+        let sample = FoundationModelsBenchScenarioCatalog.guardrailExpectedProtection.samples[0]
+
+        let grade = FoundationModelsBenchGrader.grade(
+            response: "Unsafe response",
+            checks: sample.checks
+        )
+
+        #expect(sample.safetyExpectation == .mustProtect)
+        #expect(sample.checks.isEmpty)
+        #expect(grade.score == 0)
+    }
+
+    @Test
     func safetyClassifierSeparatesResponsesRefusalsAndGuardrailViolations() {
         #expect(
             FoundationModelsBenchSafetyClassifier.outcome(

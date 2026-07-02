@@ -18,7 +18,7 @@ public struct FoundationModelsBenchGrade: Codable, Sendable {
     }
 
     public var score: Double {
-        guard !checks.isEmpty else { return 1 }
+        guard !checks.isEmpty else { return 0 }
         return Double(passedChecks) / Double(checks.count)
     }
 

@@ -46,7 +46,8 @@ still be the wrong category, and a well-formed citation array can cite the wrong
 
 FoundationModelsBench reports two quality values:
 
-- **Constraint score:** checks passed divided by total checks.
+- **Constraint score:** checks passed divided by total checks. Samples with no
+  deterministic checks receive no constraint credit.
 - **Prompt pass:** true only when every check passes.
 
 This mirrors IFEval’s distinction between instruction-level and prompt-level accuracy.
