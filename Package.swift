@@ -21,7 +21,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/rryam/FoundationModelsKit", branch: "main")
+        .package(url: "https://github.com/rryam/FoundationModelsKit", from: "2.0.0")
     ],
     targets: [
         .target(

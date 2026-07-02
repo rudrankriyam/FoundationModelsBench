@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/rryam/FoundationModelsKit",
       "state" : {
-        "branch" : "main",
-        "revision" : "d2fdf86742665f20cfcb7cec80d1ea0fce08c55b"
+        "revision" : "7cfbcfb7700a328bc796c3d9a4045c80a6ee05f3",
+        "version" : "2.0.0"
       }
     }
   ],
