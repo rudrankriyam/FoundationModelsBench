@@ -419,6 +419,7 @@ struct FoundationModelsBenchGraderTests {
         #expect(sample.safetyExpectation == .mustProtect)
         #expect(sample.checks.isEmpty)
         #expect(grade.score == 0)
+        #expect(!grade.promptPassed)
     }
 
     @Test

@@ -23,7 +23,8 @@ public struct FoundationModelsBenchGrade: Codable, Sendable {
     }
 
     public var promptPassed: Bool {
-        checks.allSatisfy(\.passed)
+        guard !checks.isEmpty else { return false }
+        return checks.allSatisfy(\.passed)
     }
 }
 
