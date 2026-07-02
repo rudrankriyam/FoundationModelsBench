@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "xceval.pipeline/v1",
+  "name": "FoundationModelsBench recorded-run evaluation",
+  "workingDirectory": ".",
+  "artifactsDirectory": ".xceval/pipeline",
+  "resultsPath": ".xceval/results",
+  "requiresEvaluationsXcode": true,
+  "steps": [
+    {
+      "name": "replay-recorded-run",
+      "command": [
+        "./foundation-models-bench-evaluate",
+        "replay",
+        "${FOUNDATION_MODELS_BENCH_RESULT}",
+        "--output",
+        ".xceval/results",
+        "--format",
+        "json"
+      ]
+    }
+  ],
+  "selection": {
+    "evaluationID": "FoundationModelsBenchReplayEvaluation"
+  }
+}

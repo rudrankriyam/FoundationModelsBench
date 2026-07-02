@@ -1,235 +1,237 @@
-# Foundation Models AppBench
+# Foundation Models Bench
 
-> [!IMPORTANT]
-> AppBench now lives in
-> [Foundation Models Framework Lab](https://github.com/rudrankriyam/Foundation-Models-Framework-Lab/tree/main/Tools/AppBench).
-> This standalone repository is preserved as a read-only historical archive.
+Foundation Models Bench is an open evaluation suite for Apple's Foundation Models
+ecosystem. It measures deployment-shaped workloads across the on-device system model,
+Private Cloud Compute, and Foundation Models-compatible provider adapters.
 
-The complete AppBench Git history was imported into Foundation Lab. Use the Lab
-repository for current source, issues, pull requests, releases, and documentation:
+The benchmark is designed for reproducible, inspectable evidence rather than a single
+leaderboard number. It reports quality, safety, tool behavior, latency, throughput,
+failures, and environment metadata separately so a fast incorrect model does not look
+good and a correct slow model does not hide its cost.
 
-```bash
-git clone https://github.com/rudrankriyam/Foundation-Models-Framework-Lab.git
-cd Foundation-Models-Framework-Lab
-./Tools/AppBench/appbench list
-```
+## Scope
 
-The canonical Mac runner is the Lab's `appbench` CLI. Physical iPhone and iPad
-measurements use the signed
-[`AppBenchDeviceRunner`](https://github.com/rudrankriyam/Foundation-Models-Framework-Lab/tree/main/Tools/AppBench/AppBenchDeviceRunner)
-harness.
+Foundation Models Bench treats these tracks as first class:
 
-Foundation Models AppBench measures real application workloads across Apple devices,
-OS releases, the on-device system model, and Private Cloud Compute.
-
-It reports **quality and performance separately**. A fast incorrect response remains
-incorrect; a high-quality response does not hide poor latency.
-
-Guided generation structure is not counted as quality. AppBench grades the semantic
-values inside a framework-constrained response, not JSON validity that decoding already
-guarantees.
-
-## Included Scenarios
-
-The starter corpus uses synthetic, reproducible inputs modeled after app experiences
-Apple highlighted in its
-[Foundation Models framework app showcase](https://www.apple.com/newsroom/2025/09/apples-foundation-models-framework-unlocks-new-intelligent-app-experiences/).
-
-| Workload | App pattern | Primary quality signal |
+| Track | Purpose | Valid runner |
 | --- | --- | --- |
-| Natural-language task parsing | Stuff, OmniFocus | Exact date, list, title, and tags |
-| Workout generation | SmartGym, 7 Minute Workout | Constraint compliance |
-| Journal summarization | Stoic, Gratitude | Grounding, completeness, and length |
-| Classification | Motivation, Streaks, Vocabulary | Exact category |
-| Grounded explanation | CellWalk, Platzi | Tool selection, arguments, and grounding |
-| Exercise substitution | Train Fitness | Tool arguments and recommendation validity |
-| Document question answering | Signeasy, Agenda | Answer and citation accuracy |
-| Citation extraction | Essayist | Exact bibliographic fields |
-| Creative writing | Detail | Instruction and length compliance |
-| Visual recommendation | VLLO, SwingVision | Image-grounded recommendation |
-| Synthetic sustained generation | Original repository workload | Decode throughput |
+| On-device Foundation Models | Local Apple Intelligence model behavior on physical Apple hardware | SwiftPM CLI on Mac, signed device runner on iPhone/iPad |
+| Private Cloud Compute | End-to-end service behavior through Apple's PCC model path | Signed app runner with PCC entitlement |
+| Compatible provider adapters | Secondary baselines for providers that conform to the Foundation Models execution contract | Adapter-backed runner |
 
-Each practical workload has 25 fixed samples: five semantic cases across five prompt
-phrasings. The app inputs and generated image fixture are original and synthetic. App
-names describe the product pattern that inspired each workload; AppBench does not
-reproduce proprietary app data.
+Third-party cloud models are useful comparison controls, but they are not the center
+of the benchmark. The primary goal is to make Foundation Models and PCC results
+credible, comparable, and reproducible.
 
-AppBench also includes a separate 50-sample **Safety Guardrails** suite. It measures:
+## Design Principles
 
-- False positives: benign sensitive-content transformations must receive a useful response.
-- Expected protection: unsafe requests must produce an Apple guardrail violation or refusal.
-- Explicit guardrail violations and model refusals as distinct outcomes.
-- Critical safety failures when protection is missed or a legitimate task is blocked.
+- **Separate quality from performance.** Prompt pass, constraint score, safety pass,
+  latency, throughput, and failures are independent report fields.
+- **Prefer deterministic grading.** The core benchmark uses exact checks, structured
+  values, tool arguments, final-state assertions, and safety outcomes before any
+  subjective judge is considered.
+- **Preserve failures.** Warmup failures remain diagnostic; measured failures count
+  against execution success.
+- **Record the environment.** Results include device, hardware model, OS version,
+  OS build, locale, thermal state, Low Power Mode, timestamp, model route, and commit.
+- **Do not publish Simulator results.** Simulator output is useful for build and UI
+  validation only.
+- **Treat PCC as a service benchmark.** PCC numbers include network and server
+  behavior. They are not device inference throughput.
+- **Use synthetic fixtures.** Scenario inputs are reproducible and inspectable. The
+  benchmark must not read user contacts, reminders, health data, documents, or other
+  private data.
 
-The safety fixtures are original, domain-neutral prompts authored specifically for
-AppBench.
+## Workloads
+
+The starter corpus covers practical app-shaped tasks:
+
+| Suite | What It Measures |
+| --- | --- |
+| Practical Quick | Representative subset for smoke checks and fast comparison |
+| Practical Full | Fixed samples across parsing, summarization, classification, grounded QA, citation extraction, visual reasoning, and creative generation |
+| Agentic Tools | Ordered tool calls, typed arguments, retry behavior, duplicate prevention, user-visible outcome, and final synthetic world state |
+| Safety Guardrails | Expected responses, expected protection, explicit guardrail violations, refusals, false positives, and missed protection |
+| Performance | Sustained generation, time to first token, decode speed, stream gaps, and memory observations |
+| Context | Long-context retrieval, context utilization, and offline experiment labels |
+
+Guided generation structure is not counted as semantic quality. The framework already
+enforces decodable structure; Foundation Models Bench grades the values inside the
+structured response.
 
 ## Metrics
 
 Every measured trial records:
 
-- Prompt-level pass: every deterministic constraint passed.
-- Constraint score: fraction of individual checks passed.
+- End-to-end task success.
+- Prompt-level pass.
+- Constraint score.
+- Safety outcome and critical safety failures.
 - End-to-end duration.
-- Time to first token (TTFT).
+- Time to first token.
 - Decode duration.
-- Output tokens per second, using Apple's tokenizer for on-device OS 26.4+ runs.
+- Output tokens per second.
 - Output characters per second.
 - Stream update count and maximum stream-update gap.
-- Input, output, and reasoning token usage where OS 27 exposes it.
-- Runtime model context size and per-trial context utilization.
-- Starting, ending, and peak observed process memory.
+- Input, output, and reasoning token usage when exposed by the runtime.
+- Context size and context utilization.
+- Starting, ending, and peak observed resident memory.
 - Starting, ending, and worst observed thermal state.
-- Tool names and typed arguments.
+- Tool names, typed arguments, ordered trajectory, and final state.
 - Requested model, executed model, and fallback reason.
-- PCC quota state before and after the run.
-- Device, chip, total memory, OS version/build, locale, and Low Power Mode.
+- PCC quota state when available.
 
-Decode throughput uses **output tokens only** and excludes TTFT. On older on-device
-systems and PCC runs, AppBench records a calibrated character estimate and marks
-the source in each trial.
+Scenario summaries report median, p90, mean, range, standard deviation, prompt pass,
+constraint score, task success, and execution failure rate.
 
-Each scenario summary reports median, p90, mean, range, standard deviation, prompt
-pass, constraint score, and execution failure rate.
+## Requirements
 
-## Run
+- Swift 6.2.
+- Xcode 26 or newer for the OS 26-compatible core.
+- Xcode 27 for OS 27 APIs, PCC experiments, and Apple Evaluations replay.
+- macOS 26 or newer for the SwiftPM runner.
+- iOS/iPadOS 26 or macOS 26 or newer for the signed device runner.
+- Apple Intelligence enabled on supported physical hardware.
+- PCC entitlement and provisioning for publishable Private Cloud Compute results.
 
-Requirements:
-
-- Xcode 26 or newer.
-- macOS 26 or newer for the CLI.
-- iOS/iPadOS 26 or newer for the device runner.
-- Apple Intelligence enabled on a supported physical device.
-- Xcode 27 and the managed PCC entitlement for Private Cloud Compute.
+## Quick Start
 
 ```bash
-# List workloads
-./appbench list
+git clone https://github.com/rudrankriyam/FoundationModelsBench.git
+cd FoundationModelsBench
 
-# Practical quick suite, five warmups and twenty measured repetitions
-./appbench --suite quick --model on-device
-
-# Full 250-sample practical corpus with export
-./appbench --suite full --warmups 5 --repetitions 20 \
-  --json Results/macbook-m5-macos-27.json \
-  --markdown Results/macbook-m5-macos-27.md
-
-# Compare cold sessions with reused conversational sessions
-./appbench --suite quick --session warm --seed 20260929
-
-# Original sustained-generation workload
-./appbench --suite performance --repetitions 20
-
-# Long-context retrieval and explicit offline experiment label
-./appbench --suite context --connectivity offline
-
-# Guardrail trigger and false-positive suite
-./appbench --suite guardrails --warmups 5 --repetitions 20
-
-# OS 27 PCC, when the executable has the approved entitlement
-DEVELOPER_DIR=/path/to/Xcode-beta.app/Contents/Developer \
-  ./appbench --suite quick --model pcc --reasoning moderate \
-  --fallback on-device
+swift test
+swift run foundation-models-bench list
+swift run foundation-models-bench --suite quick --model on-device
 ```
 
-The legacy `./benchmark` command remains as a compatibility wrapper.
-Set `APPBENCH_DEVICE_NAME` when you want a friendly public label; otherwise
-AppBench uses the non-personal hardware identifier rather than the machine
-hostname.
-
-To pair a run with Apple's Foundation Models Instrument:
+Path-independent launcher:
 
 ```bash
-cd BenchmarkCore
-./run-trace.sh --suite quick --samples 1 --repetitions 1 --no-randomize
+./foundation-models-bench --suite quick --model on-device
 ```
 
-## Execution Surfaces
+Export JSON and Markdown:
 
-Official Mac results come from `AppBenchCLI` through `./appbench`. The CLI is the
-canonical macOS benchmark runner; the SwiftUI target is not used for publishable Mac
-measurements.
+```bash
+swift run foundation-models-bench --suite full \
+  --warmups 5 \
+  --repetitions 20 \
+  --model on-device \
+  --json Results/macbook-pro-macos27-on-device-full.json \
+  --markdown Results/macbook-pro-macos27-on-device-full.md
+```
 
-iOS does not provide a standalone CLI environment for this framework. Official iPhone
-and iPad results therefore use the signed `AppBenchDeviceRunner` harness on a physical
-Apple Intelligence device. Open
-`AppBenchDeviceRunner/AppBenchDeviceRunner.xcodeproj`, select the physical device, and
-run the `AppBenchDeviceRunner` scheme.
+Run one agentic sample with full tool/state evidence:
 
-The device runner provides controls for:
+```bash
+swift run foundation-models-bench --suite agentic \
+  --sample personal-organizer-012 \
+  --warmups 0 \
+  --repetitions 1 \
+  --no-randomize
+```
 
-- Practical Quick, Practical Full, Safety Guardrails, and Synthetic Performance suites.
-- On-device and PCC execution.
-- Five-warmup/twenty-run publishable defaults.
-- One or all 25 samples per workload.
-- Cold or reused sessions and randomized order.
-- PCC reasoning level and on-device fallback.
-- Normal or user-induced offline experiment labels.
-- Per-scenario prompt pass, constraint score, median TTFT, and median output speed.
-- Markdown report copying.
+Run the guardrail suite:
 
-Simulator runs are only for build and interface validation. They are not valid
-benchmark results, even if a model happens to report availability.
+```bash
+swift run foundation-models-bench --suite guardrails \
+  --warmups 5 \
+  --repetitions 20
+```
 
-## OS 26 vs OS 27
+## Private Cloud Compute
 
-Use the same physical device, fixtures, sampling, warmups, and repetition count.
+Do not use `swift run foundation-models-bench --model pcc` as publishable PCC
+evidence. SwiftPM executables do not inherit a signed application target's managed
+PCC entitlement.
 
-Recommended initial matrix:
+For PCC, build and run the signed device runner:
 
-| Device | OS | Model |
-| --- | --- | --- |
-| MacBook Pro M5 | macOS 26 | On-device |
-| MacBook Pro M5 | macOS 27 | On-device |
-| MacBook Pro M5 | macOS 27 | PCC |
-| iPhone 16 Pro Max | iOS 26 | On-device |
-| iPhone 16 Pro Max | iOS 27 | On-device |
-| iPhone 16 Pro Max | iOS 27 | PCC |
+```bash
+xcodebuild \
+  -project FoundationModelsBenchDeviceRunner/FoundationModelsBenchDeviceRunner.xcodeproj \
+  -scheme FoundationModelsBenchDeviceRunner \
+  -destination 'generic/platform=macOS' \
+  CODE_SIGNING_ALLOWED=NO \
+  build
+```
 
-PCC measures end-to-end service behavior, including network and server time. It is not
-a measurement of the client device’s inference speed. PCC can change server-side
-without an OS update, so every result retains its timestamp and OS build. AppBench
-records Apple's qualitative quota state; the API does not expose numeric request or
-token consumption.
+For publishable PCC measurements, use a real signed app container whose App ID,
+provisioning profile, and executable signature all include
+`com.apple.developer.private-cloud-compute`. Record network conditions and region
+notes with the exported result.
 
-See [Methodology](docs/METHODOLOGY.md),
-[Research Notes](docs/RESEARCH_NOTES.md),
-[OS 26 vs OS 27](docs/OS_26_VS_27.md),
-[PCC Notes](docs/PCC.md),
-[Device Matrix](docs/DEVICE_MATRIX.md), and
-[Migration Notes](docs/MIGRATION.md).
+## Apple Evaluations Replay
 
-## Current Baseline
+The portable benchmark package does not depend on Apple's macOS-only Evaluations
+framework. The separate `Evaluations` package replays recorded JSON results into
+native `.xcevalresult` artifacts without running the measured model again.
 
-The first curated baseline was captured on June 12, 2026, using a MacBook Pro
-with Apple M5 and 32 GB of memory on macOS 27 beta build `26A5353q`.
+```bash
+./foundation-models-bench-evaluate replay \
+  Results/run.json \
+  --output /tmp/foundation-models-bench-evaluations \
+  --format json
+```
 
-- Practical suite: 25/25 measured trials passed every semantic check.
-- Synthetic sustained generation: median TTFT `0.413s`, median decode rate
-  `55.35 tok/s`.
-- Thermal state remained nominal and Low Power Mode was off.
-- PCC was unavailable in the current system context and the failed attempt is
-  retained rather than omitted.
+The deterministic replay artifact remains the primary evidence. Optional PCC judge
+artifacts are secondary and should be reported separately.
 
-That baseline predates the 250-sample practical corpus and is retained as historical
-performance data. It must not be compared as if it were a run of the expanded suite.
+## Valid Result Policy
 
-See [Results](Results/README.md) for the reports and the limits on interpreting
-this single-device baseline. Pre-AppBench community measurements are preserved
-in [Legacy Results](docs/LEGACY_RESULTS.md), but their throughput formula is not
-comparable with current reports.
+A publishable result must include:
 
-## Package
+- JSON report produced by the benchmark.
+- Markdown summary or table derived from the same JSON.
+- Exact commit SHA.
+- Device model and hardware identifier.
+- OS version and build.
+- Model route: on-device, PCC, or adapter name.
+- Warmups, repetitions, sample selection, seed, and session mode.
+- Thermal state, Low Power Mode, and timestamp.
+- PCC entitlement evidence for PCC runs.
+- Disclosure of failures and unavailable scenarios.
 
-`BenchmarkCore/Package.swift` exports:
+Invalid as benchmark evidence:
 
-- `AppBenchCore`: scenarios, graders, runner, statistics, and reports.
-- `AppBenchEvaluations`: OS 27 adapter for Evaluations samples and evaluators.
-- `AppBenchCLI`: command-line experiment runner.
-- `BenchmarkCore`: compatibility product that exposes the `AppBenchCore` module.
+- Simulator runs.
+- Manually edited reports.
+- Results without OS build.
+- PCC numbers from an unsigned or unentitled process.
+- Comparisons that change fixtures, seed, sample selection, warmups, or repetitions
+  without saying so.
 
-## License
+## Repository Layout
 
-MIT. See [LICENSE](LICENSE).
+```text
+Sources/FoundationModelsBenchCore/        Scenarios, runner, graders, metrics, reports
+Sources/FoundationModelsBenchCLI/         SwiftPM command-line runner
+Tests/FoundationModelsBenchCoreTests/     Offline validation tests
+FoundationModelsBenchDeviceRunner/        Signed iOS/macOS runner for device and PCC runs
+Evaluations/                              macOS 27 recorded-result replay package
+Results/                                  Curated JSON and Markdown benchmark results
+docs/                                     Methodology, PCC notes, device matrix, research notes
+```
 
-[![Star History Chart](https://api.star-history.com/svg?repos=rudrankriyam/Foundation-Models-AppBench&type=Date)](https://star-history.com/#rudrankriyam/Foundation-Models-AppBench&Date)
+## Documentation
+
+- [Methodology](docs/METHODOLOGY.md)
+- [Research Notes](docs/RESEARCH_NOTES.md)
+- [Private Cloud Compute](docs/PCC.md)
+- [Device Matrix](docs/DEVICE_MATRIX.md)
+- [OS 26 vs OS 27](docs/OS_26_VS_27.md)
+- [Apple Evaluations Replay](docs/EVALUATIONS.md)
+
+## Status
+
+Foundation Models Bench is an independent open-source benchmark. It is not an Apple
+benchmark and is not endorsed by Apple. The goal is to provide a transparent,
+community-reviewable standard for Foundation Models and Private Cloud Compute
+measurement.
+
+## Contributing
+
+Contributions should improve reproducibility, coverage, or evidence quality. New
+scenarios need synthetic fixtures, deterministic checks, documented provenance, and
+tests. See [CONTRIBUTING.md](CONTRIBUTING.md).

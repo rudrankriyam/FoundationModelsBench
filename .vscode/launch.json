@@ -4,21 +4,21 @@
             "type": "swift",
             "request": "launch",
             "args": [],
-            "cwd": "${workspaceFolder:Foundation-Models-Framework-Benchmark}/BenchmarkCore",
-            "name": "Debug BenchmarkCLI (BenchmarkCore)",
-            "target": "BenchmarkCLI",
+            "cwd": "${workspaceFolder:Foundation-Models-Framework-Benchmark}/FoundationModelsBenchCore",
+            "name": "Debug FoundationModelsBenchCLI (FoundationModelsBenchCore)",
+            "target": "FoundationModelsBenchCLI",
             "configuration": "debug",
-            "preLaunchTask": "swift: Build Debug BenchmarkCLI (BenchmarkCore)"
+            "preLaunchTask": "swift: Build Debug FoundationModelsBenchCLI (FoundationModelsBenchCore)"
         },
         {
             "type": "swift",
             "request": "launch",
             "args": [],
-            "cwd": "${workspaceFolder:Foundation-Models-Framework-Benchmark}/BenchmarkCore",
-            "name": "Release BenchmarkCLI (BenchmarkCore)",
-            "target": "BenchmarkCLI",
+            "cwd": "${workspaceFolder:Foundation-Models-Framework-Benchmark}/FoundationModelsBenchCore",
+            "name": "Release FoundationModelsBenchCLI (FoundationModelsBenchCore)",
+            "target": "FoundationModelsBenchCLI",
             "configuration": "release",
-            "preLaunchTask": "swift: Build Release BenchmarkCLI (BenchmarkCore)"
+            "preLaunchTask": "swift: Build Release FoundationModelsBenchCLI (FoundationModelsBenchCore)"
         }
     ]
 }

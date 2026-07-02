@@ -1,4 +1,4 @@
-# Foundation Models AppBench
+# Foundation Models Bench
 
 - Suite: Synthetic Performance
 - Model: On-device
@@ -19,4 +19,4 @@
 - Memory: 32 GB
 - Thermal state: nominal
 - Low Power Mode: off
-- AppBench commit: 1d8d492
+- FoundationModelsBench commit: 1d8d492

@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use Foundation Models Bench in published work, please cite the repository."
+title: "Foundation Models Bench"
+authors:
+  - family-names: "Riyam"
+    given-names: "Rudrank"
+repository-code: "https://github.com/rudrankriyam/FoundationModelsBench"
+url: "https://github.com/rudrankriyam/FoundationModelsBench"
+abstract: "An open evaluation suite for Apple's Foundation Models ecosystem, including on-device models, Private Cloud Compute, and compatible provider adapters."
+keywords:
+  - "Foundation Models"
+  - "Private Cloud Compute"
+  - "Apple Intelligence"
+  - "benchmark"
+  - "evaluation"
+license: "MIT"

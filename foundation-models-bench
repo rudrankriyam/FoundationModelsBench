@@ -1,0 +1,13 @@
+#!/bin/zsh
+set -euo pipefail
+
+script_dir="$(cd "$(dirname "$0")" && pwd)"
+
+FOUNDATION_MODELS_BENCH_COMMIT="$(
+  git -C "$script_dir" rev-parse --short HEAD 2>/dev/null || true
+)"
+export FOUNDATION_MODELS_BENCH_COMMIT
+
+exec /usr/bin/xcrun swift run --quiet \
+  --package-path "$script_dir" \
+  foundation-models-bench "$@"

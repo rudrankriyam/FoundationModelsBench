@@ -1,0 +1,15 @@
+{
+  "originHash" : "57c682580b791b2b83c1f64be8f048a51b28bf098d63c1cb951fc9d84c47f84a",
+  "pins" : [
+    {
+      "identity" : "foundationmodelskit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/rryam/FoundationModelsKit",
+      "state" : {
+        "branch" : "main",
+        "revision" : "d2fdf86742665f20cfcb7cec80d1ea0fce08c55b"
+      }
+    }
+  ],
+  "version" : 3
+}

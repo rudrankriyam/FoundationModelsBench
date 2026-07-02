@@ -1,7 +1,7 @@
 {
   "endedAt" : "2026-06-12T08:38:57Z",
   "environment" : {
-    "appBenchCommit" : "1d8d492",
+    "foundationModelsBenchCommit" : "1d8d492",
     "cpuCores" : 10,
     "cpuModel" : "Apple M5",
     "deviceName" : "MacBook Pro M5",
@@ -64,7 +64,7 @@
   "trials" : [
     {
       "environment" : {
-        "appBenchCommit" : "1d8d492",
+        "foundationModelsBenchCommit" : "1d8d492",
         "cpuCores" : 10,
         "cpuModel" : "Apple M5",
         "deviceName" : "MacBook Pro M5",
@@ -142,7 +142,7 @@
     },
     {
       "environment" : {
-        "appBenchCommit" : "1d8d492",
+        "foundationModelsBenchCommit" : "1d8d492",
         "cpuCores" : 10,
         "cpuModel" : "Apple M5",
         "deviceName" : "MacBook Pro M5",
@@ -220,7 +220,7 @@
     },
     {
       "environment" : {
-        "appBenchCommit" : "1d8d492",
+        "foundationModelsBenchCommit" : "1d8d492",
         "cpuCores" : 10,
         "cpuModel" : "Apple M5",
         "deviceName" : "MacBook Pro M5",
@@ -298,7 +298,7 @@
     },
     {
       "environment" : {
-        "appBenchCommit" : "1d8d492",
+        "foundationModelsBenchCommit" : "1d8d492",
         "cpuCores" : 10,
         "cpuModel" : "Apple M5",
         "deviceName" : "MacBook Pro M5",
@@ -376,7 +376,7 @@
     },
     {
       "environment" : {
-        "appBenchCommit" : "1d8d492",
+        "foundationModelsBenchCommit" : "1d8d492",
         "cpuCores" : 10,
         "cpuModel" : "Apple M5",
         "deviceName" : "MacBook Pro M5",

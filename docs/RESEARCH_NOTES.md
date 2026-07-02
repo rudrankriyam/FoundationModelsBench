@@ -1,7 +1,7 @@
 # Benchmark Research Notes
 
 This document records the evaluation literature and Apple material used to
-design AppBench. It is a design audit, not a claim that the starter corpus is a
+design FoundationModelsBench. It is a design audit, not a claim that the starter corpus is a
 complete model benchmark.
 
 ## Main Conclusion
@@ -13,7 +13,7 @@ A useful application benchmark needs three separate views:
 3. Under what device, OS, model, thermal, power, and service conditions did it run?
 
 A single accuracy score or tokens-per-second value cannot answer all three.
-AppBench therefore keeps semantic quality, performance, failures, and
+FoundationModelsBench therefore keeps semantic quality, performance, failures, and
 environment metadata separate.
 
 ## Apple Foundation Model Reports
@@ -24,7 +24,7 @@ environment metadata separate.
 
 Apple evaluates model capability with public benchmarks, internal
 feature-shaped tasks, human preference evaluation, safety evaluation, and
-efficiency measurements. The important lesson for AppBench is that the
+efficiency measurements. The important lesson for FoundationModelsBench is that the
 production feature is the final unit of evaluation. A general model score does
 not establish whether a notification summary, rewrite, or app action works.
 
@@ -39,7 +39,7 @@ optimization regressions, and builds targeted safety datasets for tasks such as
 summarization and question answering. The report also explicitly positions the
 on-device model for bounded app tasks rather than general world-knowledge chat.
 
-AppBench adopts four lessons:
+FoundationModelsBench adopts four lessons:
 
 - Use app-shaped tasks such as extraction, summarization, classification, and
   grounded question answering.
@@ -55,7 +55,7 @@ AppBench adopts four lessons:
 Apple announced the third model generation on June 8, 2026, spanning
 on-device and Private Cloud Compute models. Apple says updated evaluations and
 benchmarks will arrive in a technical report later in 2026. Until that report
-exists, AppBench should identify the exact OS build and observed runtime
+exists, FoundationModelsBench should identify the exact OS build and observed runtime
 behavior instead of inventing a public model-version label.
 
 ## General Evaluation Research
@@ -65,7 +65,7 @@ behavior instead of inventing a public model-version label.
 [Holistic Evaluation of Language Models](https://arxiv.org/abs/2211.09110)
 
 HELM argues for scenario coverage, multiple metrics, standardized conditions,
-raw-output transparency, and explicit disclosure of what is missing. AppBench
+raw-output transparency, and explicit disclosure of what is missing. FoundationModelsBench
 uses named scenarios, separate quality and efficiency metrics, environment
 snapshots, raw responses, and a limitations section for the same reasons.
 
@@ -74,7 +74,7 @@ snapshots, raw responses, and a limitations section for the same reasons.
 [Instruction-Following Evaluation for Large Language Models](https://arxiv.org/abs/2311.07911)
 
 IFEval uses objectively verifiable instructions and distinguishes individual
-instruction accuracy from strict prompt-level accuracy. AppBench mirrors this
+instruction accuracy from strict prompt-level accuracy. FoundationModelsBench mirrors this
 with constraint score and prompt pass. This is especially appropriate for app
 actions where one wrong date, category, source, or required fact can invalidate
 an otherwise fluent response.
@@ -84,16 +84,19 @@ an otherwise fluent response.
 [BFCL](https://proceedings.mlr.press/v267/patil25a.html)
 
 BFCL treats tool choice and arguments as executable behavior rather than prose.
-AppBench's grounded explanation and exercise substitution workloads execute
+FoundationModelsBench's grounded explanation and exercise substitution workloads execute
 real deterministic tools and grade the selected tool plus typed arguments.
-Call-order, state-change, and recovery datasets remain future extensions.
+The Agentic Tools suite now adds ordered calls and mocked final-state grading through a
+25-sample contact-grounded reminder scenario. It exercises missing and ambiguous data,
+side-effect restraint, duplicate detection, retry behavior, hard failures, and untrusted
+tool output. Broader domains and longer-horizon state dependencies remain future work.
 
 ### RULER
 
 [RULER](https://arxiv.org/abs/2404.06654)
 
 RULER shows that long-context evaluation should vary task complexity and
-context length instead of relying on a single retrieval pattern. AppBench now
+context length instead of relying on a single retrieval pattern. FoundationModelsBench now
 includes a deterministic key-retrieval context suite and records context
 utilization. A publishable long-context study should still sweep document
 count, distractors, answer position, and utilization.
@@ -104,7 +107,7 @@ count, distractors, answer position, and utilization.
 
 G-Eval demonstrates rubric-based model grading for subjective text quality.
 It also reinforces that judge prompts and model choice are part of the
-experiment. AppBench starts with deterministic checks. Any future model judge
+experiment. FoundationModelsBench starts with deterministic checks. Any future model judge
 must be versioned, retain rationales, and be calibrated against human labels.
 
 ### MT-Bench and Chatbot Arena
@@ -112,7 +115,7 @@ must be versioned, retain rationales, and be calibrated against human labels.
 [Paper](https://arxiv.org/abs/2306.05685)
 
 This work studies human preference and LLM-as-a-judge evaluation, including
-position, verbosity, and self-enhancement biases. For AppBench, pairwise judges
+position, verbosity, and self-enhancement biases. For FoundationModelsBench, pairwise judges
 should swap response order, avoid treating longer answers as automatically
 better, and report agreement with human raters.
 
@@ -123,7 +126,7 @@ better, and report agreement with human raters.
 [Paper](https://arxiv.org/abs/2410.03613)
 
 Mobile inference quality is inseparable from latency, battery, resource use,
-and dynamic hardware behavior. AppBench records hardware, OS build, thermal
+and dynamic hardware behavior. FoundationModelsBench records hardware, OS build, thermal
 state, total memory, observed resident memory, and Low Power Mode. Direct energy
 and utilization sampling remain future work.
 
@@ -131,7 +134,7 @@ and utilization sampling remain future work.
 
 [Paper](https://arxiv.org/abs/2407.07000)
 
-Aggregate throughput can hide stalls in token delivery. AppBench therefore
+Aggregate throughput can hide stalls in token delivery. FoundationModelsBench therefore
 records cumulative stream-update timing and the maximum gap, while avoiding the
 false claim that each Foundation Models snapshot equals one token.
 
@@ -139,7 +142,7 @@ false claim that each Foundation Models snapshot equals one token.
 
 [Benchmark](https://mlcommons.org/benchmarks/client/)
 
-MLPerf Client separates time to first token from generation rate. AppBench does
+MLPerf Client separates time to first token from generation rate. FoundationModelsBench does
 the same and excludes all tokens present in the first cumulative stream snapshot
 from decode throughput.
 
@@ -153,22 +156,28 @@ metrics, aggregation, Swift Testing integration, Xcode reports, synthetic sample
 generation, and model judges. It is the right home for deep feature-quality
 evaluation in an OS 27-only app.
 
-AppBench is complementary:
+FoundationModelsBench is complementary:
 
 - It keeps an OS 26-compatible runner.
 - It captures TTFT, decode rate, stream gaps, thermals, power state, hardware,
   OS build, and raw portable JSON.
 - It compares physical devices and PCC service behavior outside an Xcode test
   report.
-- Its OS 27 adapter produces Evaluations `ModelSample`, deterministic
-  `Evaluator`, and `ToolCallEvaluator` values from the same fixture semantics.
+- Its macOS 27 replay package produces Evaluations `ModelSample`, deterministic
+  `Evaluator`, and native `ToolCallEvaluator` values from recorded responses.
+- The standalone `xceval` CLI reads, streams, compares, and extracts generic
+  `.xcevalresult` JSON without requiring the Xcode report UI or FoundationModelsBench code.
 
 The two systems should share datasets and grading definitions, not duplicate
 truth in two unrelated corpora.
 
+See [FoundationModelsBench and Apple Evaluations](EVALUATIONS.md) for the full Apple resource
+inventory, Xcode folder disambiguation, result schema, producer/consumer boundary,
+and verified Xcode 27 beta behavior.
+
 ## Safety Trigger Design
 
-AppBench's safety suite follows a general evaluation principle: test both expected
+FoundationModelsBench's safety suite follows a general evaluation principle: test both expected
 triggers and closely related expected non-triggers. This exposes false positives as
 well as missed protection. Safety outcomes are deterministic ship-blocking signals;
 they are not averaged away by latency or subjective quality scores.
@@ -178,9 +187,9 @@ Models guardrails.
 
 ## Deliberate Non-Tests
 
-Guided-generation structure is not a quality test in AppBench. Foundation
+Guided-generation structure is not a quality test in FoundationModelsBench. Foundation
 Models constrains the output during decoding, so testing whether the resulting
-JSON has the requested schema mostly tests the framework contract. AppBench
+JSON has the requested schema mostly tests the framework contract. FoundationModelsBench
 instead tests whether the constrained values are semantically correct.
 
 The benchmark also avoids a single composite score. Quality, latency, service

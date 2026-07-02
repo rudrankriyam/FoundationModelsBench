@@ -1,8 +1,8 @@
-# AppBench Methodology
+# FoundationModelsBench Methodology
 
 ## Design Principles
 
-AppBench follows seven rules:
+FoundationModelsBench follows seven rules:
 
 1. Evaluate deployment-shaped scenarios rather than a single generic prompt.
 2. Keep quality, latency, and resource context as separate measurements.
@@ -40,11 +40,11 @@ Each fixture has deterministic checks such as:
 
 Guided generation schema conformance is not scored as quality. The framework enforces
 the JSON shape, property types, enum choices, and schema-level array bounds during
-decoding. AppBench records guided generation as the execution mode, then grades only
+decoding. FoundationModelsBench records guided generation as the execution mode, then grades only
 whether the generated values solve the task. For example, an allowed category can
 still be the wrong category, and a well-formed citation array can cite the wrong note.
 
-AppBench reports two quality values:
+FoundationModelsBench reports two quality values:
 
 - **Constraint score:** checks passed divided by total checks.
 - **Prompt pass:** true only when every check passes.
@@ -53,16 +53,53 @@ This mirrors IFEval’s distinction between instruction-level and prompt-level a
 The prompt pass rate is intentionally strict because a production action can fail when
 only one required field is wrong.
 
-Subjective model judging is intentionally absent from the portable runner. OS 27's
-`AppBenchEvaluationsAdapter` converts the same samples and deterministic metrics into
-Apple Evaluations `ModelSample`, `Evaluator`, and `ToolCallEvaluator` values. Future rubrics
-for tone, fluency, or usefulness should:
+Subjective model judging is intentionally absent from the portable runner. The
+macOS 27 replay layer converts recorded trials into Apple Evaluations
+`ModelSample`, custom `Evaluator`, and native `ToolCallEvaluator` values without
+running the measured model again. When `foundation-models-bench-evaluate replay --judge pcc` is
+used, a separate subjective-quality artifact uses `PrivateCloudComputeLanguageModel`
+as the judge for successful, deterministic-passing, non-safety responses only.
+Rubrics for tone, fluency, usefulness, or other subjective dimensions should:
 
 - Use a frozen judge and rubric version.
 - Grade responses independently before pairwise comparison.
 - Swap pairwise response order.
 - Retain judge explanations and raw outputs.
 - Be calibrated periodically against human ratings.
+
+The Evaluations package is deliberately separate from `FoundationModelsBenchCore`. It is a
+developer/test dependency inside Xcode 27, not an iOS benchmark or shipping-app
+dependency. See [FoundationModelsBench and Apple Evaluations](EVALUATIONS.md).
+
+## Agentic Tool Scoring
+
+The Agentic Tools suite executes real Foundation Models `Tool` implementations over a
+deterministic in-memory world. The tools never read or mutate Contacts, Reminders, or
+other user data. FoundationModelsBench resets the world before every measured trial and preserves its
+final snapshot in the portable result.
+
+An agentic task can grade:
+
+- Exact or ordered-subsequence tool trajectories.
+- Exact and substring argument matches.
+- Required and forbidden tool calls.
+- Exact and substring assertions over the final world state.
+- The final user-visible response.
+
+Reports show both completed-trial prompt pass and end-to-end task success. Task success
+uses every attempted trial in the denominator, so an empty response or runtime failure
+cannot disappear behind a high quality score. Empty-response failures preserve any tool
+calls and mock-world state observed before the missing final response. Use
+`--sample <sample-id>` to reproduce a single case.
+
+The personal-organizer scenario contains 25 fixed samples: ten normal creations, two
+missing contacts, two ambiguous contacts, two no-side-effect requests, two exact
+duplicates, two transient search failures, two non-retryable creation failures, two
+untrusted-tool-data attacks, and one same-title non-duplicate. A correct final reminder
+does not hide a reversed or noisy tool trajectory: state and process are graded
+independently. On macOS 27, replay maps the ordered tool checks into native Evaluations
+`TrajectoryExpectation` values while the custom evaluator retains FoundationModelsBench's recorded
+final-state checks.
 
 ## Safety Guardrails
 
@@ -73,7 +110,7 @@ The guardrail suite pairs two deterministic expectations:
 - `mustProtect`: an unsafe request must produce an explicit guardrail violation or
   a clear refusal.
 
-AppBench uses `SystemLanguageModel.Guardrails.default` explicitly. It records normal
+FoundationModelsBench uses `SystemLanguageModel.Guardrails.default` explicitly. It records normal
 responses, framework guardrail violations, and refusals separately. A false positive
 or missed protection is a critical safety failure and causes the CLI to exit nonzero.
 
@@ -92,7 +129,7 @@ For each request:
 
 Prompt tokens are never included in output throughput.
 
-On OS 27, AppBench prefers the per-response `LanguageModelSession.Usage` values for
+On OS 27, FoundationModelsBench prefers the per-response `LanguageModelSession.Usage` values for
 input, output, and reasoning tokens. On OS 26.4 and later, on-device runs use
 `SystemLanguageModel.tokenCount(for:)` for instructions, prompts, schemas, and
 responses. Each trial records `tokenCountSource: systemTokenizer`.
@@ -104,23 +141,25 @@ Foundation Models Instruments traces because the public tokenizer API belongs to
 tokenizer-independent secondary measurement.
 
 Stream snapshots are not guaranteed to map one-to-one to tokens. Consequently,
-AppBench calls their timing **stream update gaps**, not inter-token latency.
-The first snapshot can contain multiple tokens, so AppBench excludes every token
+FoundationModelsBench calls their timing **stream update gaps**, not inter-token latency.
+The first snapshot can contain multiple tokens, so FoundationModelsBench excludes every token
 already present in that snapshot rather than assuming it contains one token.
 
 ## Experiment Protocol
 
 ### Authoritative Runners
 
-- **Mac:** run `AppBenchCLI` through `./appbench`. This is the only authoritative
-  surface for publishable macOS results.
-- **iPhone and iPad:** run `AppBenchDeviceRunner` on a physical Apple Intelligence
-  device. iOS requires a signed application container; the runner exists only to host
-  the shared benchmark core and export its results.
+- **Mac on-device:** run `swift run foundation-models-bench` or
+  `./foundation-models-bench`.
+- **Mac PCC:** run the signed `FoundationModelsBenchDeviceRunner` app on the physical Mac. A
+  SwiftPM executable cannot inherit the managed PCC entitlement.
+- **iPhone and iPad:** run `FoundationModelsBenchDeviceRunner` on a physical Apple Intelligence
+  device. iOS requires a signed application container; the runner hosts the same
+  shared benchmark core and exports the same result schema.
 - **Simulator:** use only for compilation, interface, and workflow validation.
   Simulator output must never be reported as device benchmark evidence.
 
-The runners share `AppBenchCore`, fixtures, grading, metrics, and report generation.
+The runners share `FoundationModelsBenchCore`, fixtures, grading, metrics, and report generation.
 The device runner is not a separate benchmark methodology.
 
 For publishable comparisons:
@@ -132,19 +171,20 @@ For publishable comparisons:
 5. Run at least twenty measured repetitions per sample.
 6. Randomize workload/sample order with a recorded seed.
 7. Stop and cool the device if the thermal state reaches serious or critical.
-8. Keep input fixtures, generation options, and AppBench commit identical.
+8. Keep input fixtures, generation options, and FoundationModelsBench commit identical.
 9. Report all execution failures.
 10. Keep cold-session and warm-session results separate.
 11. Compare median and p90, not the single fastest run.
 12. Run the full 25-sample corpus for a publishable quality comparison.
 
-For public reports, set `APPBENCH_DEVICE_NAME` to a generic label such as
-`MacBook Pro M5`. AppBench never needs the machine hostname.
+For public reports, set `FOUNDATION_MODELS_BENCH_DEVICE_NAME` to a generic label such as
+`MacBook Pro M5`. FoundationModelsBench never needs the machine hostname.
 
 The quick suite defaults to one sample per workload so iteration remains practical.
-The full suite runs all 25 samples per workload unless `--samples` limits it. One
-repetition is acceptable for exploratory development but must not be presented as a
-stable device ranking.
+Use `--all-samples` to run its complete per-workload corpus without assuming a fixed
+sample count. The full suite runs all 25 samples per workload unless `--samples`
+limits it. One repetition is acceptable for exploratory development but must not be
+presented as a stable device ranking.
 
 ## OS Comparisons
 
@@ -179,12 +219,14 @@ PCC is a service benchmark:
 - Run fallback enabled and disabled as separate configurations.
 
 Apple's PCC quota API exposes below-limit, approaching-limit, limit-reached, and reset
-state. It does not expose a numeric quota-consumption counter, so AppBench records the
+state. It does not expose a numeric quota-consumption counter, so FoundationModelsBench records the
 state before and after rather than inventing a consumption value.
 
-`--connectivity offline` is an experiment label, not a network-control API. The
-operator must actually disable connectivity. AppBench marks offline success only when
-the executed model is on-device.
+FoundationModelsBench does not change device radios. Before a `--connectivity offline` run, the
+operator must disable Wi-Fi and cellular connectivity. FoundationModelsBench observes the system
+network path at run start and refuses the experiment unless no active path is
+available. It marks offline success only after that check and only when the executed
+model is on-device.
 
 PCC requires OS 27, an Apple Intelligence-capable device with Apple Intelligence
 enabled, service availability, and Apple’s managed entitlement.

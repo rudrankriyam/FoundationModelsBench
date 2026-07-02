@@ -30,6 +30,7 @@ playground.xcworkspace
 # .swiftpm
 
 .build/
+.xceval/
 
 # CocoaPods
 #
@@ -61,8 +62,9 @@ fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
 
-# AppBench generated artifacts
+# FoundationModelsBench generated artifacts
 *.trace/
-Results/*.json
-Results/*.md
-!Results/README.md
+*.xcresult/
+*.xcevalresult
+*.xcevalresults.jsonl
+Results/raw/

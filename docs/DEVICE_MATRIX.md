@@ -7,14 +7,15 @@
 - OS 26 on-device baseline.
 - OS 27 on-device comparison.
 - OS 27 PCC service comparison.
-- Run every published Mac measurement with `AppBenchCLI`.
+- Run on-device measurements with `swift run foundation-models-bench` and PCC measurements with the
+  signed `FoundationModelsBenchDeviceRunner` app.
 
 ### iPhone 16 Pro Max
 
 - OS 26 on-device baseline.
 - OS 27 on-device comparison.
 - OS 27 PCC service comparison.
-- Run every published iPhone measurement with `AppBenchDeviceRunner` on the
+- Run every published iPhone measurement with `FoundationModelsBenchDeviceRunner` on the
   physical phone.
 
 Capture OS 26 results before upgrading. Apple may stop signing an older OS, making a
@@ -49,7 +50,7 @@ Results/iphone-16-pro-max-ios26-on-device-full-2026-06-12.json
 - Nominal or fair thermal state.
 - Low Power Mode recorded.
 - No omitted failures.
-- AppBench commit SHA recorded alongside the result.
+- FoundationModelsBench commit SHA recorded alongside the result.
 
 For the cleanest OS comparison, use two identical devices, one held on OS 26 and one
 on OS 27. If one physical device is upgraded in place, capture the complete OS 26
